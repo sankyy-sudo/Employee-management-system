@@ -1,0 +1,30 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "attendance": "Attendance",
+    "leave": "Leave",
+    "meeting": "Meeting",
+    "notifications": "Notifications",
+    "admin": "Admin",
+    "language": "Language"
+  },
+  "attendance": {
+    "smartTitle": "Smart Attendance System",
+    "smartSubtitle": "Face, voice, RFID, analytics, and secure attendance capture.",
+    "face": "Face",
+    "voice": "Voice",
+    "rfid": "RFID",
+    "logs": "Logs",
+    "adminCards": "Card Admin",
+    "startCamera": "Start camera",
+    "stopCamera": "Stop camera",
+    "registerFace": "Register face",
+    "checkIn": "Check in",
+    "checkOut": "Check out",
+    "listen": "Listen",
+    "retry": "Retry",
+    "scanCard": "Scan card",
+    "cardPlaceholder": "Scan or enter card number",
+    "export": "Export"
+  }
+}

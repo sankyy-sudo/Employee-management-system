@@ -1,0 +1,30 @@
+{
+  "common": {
+    "dashboard": "Tableau de bord",
+    "attendance": "Présence",
+    "leave": "Congés",
+    "meeting": "Réunion",
+    "notifications": "Notifications",
+    "admin": "Admin",
+    "language": "Langue"
+  },
+  "attendance": {
+    "smartTitle": "Système de présence intelligent",
+    "smartSubtitle": "Visage, voix, RFID, analyses et pointage sécurisé.",
+    "face": "Visage",
+    "voice": "Voix",
+    "rfid": "RFID",
+    "logs": "Journaux",
+    "adminCards": "Cartes",
+    "startCamera": "Démarrer la caméra",
+    "stopCamera": "Arrêter la caméra",
+    "registerFace": "Enregistrer le visage",
+    "checkIn": "Entrée",
+    "checkOut": "Sortie",
+    "listen": "Écouter",
+    "retry": "Réessayer",
+    "scanCard": "Scanner la carte",
+    "cardPlaceholder": "Scanner ou saisir le numéro de carte",
+    "export": "Exporter"
+  }
+}

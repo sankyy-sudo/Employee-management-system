@@ -48,6 +48,7 @@ import Button from "../components/ui/Button";
 import Card, { SectionHeader } from "../components/ui/Card";
 import EmptyState from "../components/ui/EmptyState";
 import Skeleton from "../components/ui/Skeleton";
+import SmartAttendanceSystem from "../components/SmartAttendanceSystem";
 import api from "../lib/api";
 import getSocket from "../lib/socket";
 import { useAuth } from "../context/AuthContext";
@@ -351,6 +352,8 @@ export default function Attendance() {
             {message}
           </Motion.div>
         )}
+
+        <SmartAttendanceSystem onAttendanceMarked={() => loadAttendance(true)} />
 
         {loading ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">

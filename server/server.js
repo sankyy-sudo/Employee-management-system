@@ -30,6 +30,9 @@ import aiRoutes from "./routes/aiRoutes.js";
 import moodRoutes from "./routes/moodRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
+import biometricRoutes from "./routes/biometricRoutes.js";
+import rfidRoutes from "./routes/rfidRoutes.js";
 
 dotenv.config();
 
@@ -83,6 +86,9 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/moods", moodRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/projects", projectRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/biometric", biometricRoutes);
+app.use("/api/rfid", rfidRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -5,7 +5,7 @@ import { serializeEmployee } from "../utils/employeeProfile.js";
 
 const signAccessToken = (user) =>
   jwt.sign(
-    { id: user._id, role: user.role, email: user.email, name: user.name },
+    { id: user._id, role: String(user.role || "employee").toLowerCase(), email: user.email, name: user.name },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || "15m" }
   );
@@ -32,7 +32,8 @@ export const register = async (req, res) => {
   }
 
   const hash = await bcrypt.hash(req.body.password, 10);
-  const user = await User.create({ ...req.body, password: hash, lastSeenAt: new Date() });
+  const normalizedRole = String(req.body.role || "employee").toLowerCase();
+  const user = await User.create({ ...req.body, password: hash, lastSeenAt: new Date(), role: normalizedRole });
   const refreshToken = await persistRefreshToken(user);
   const safeUser = await User.findById(user._id).select("-password -refreshTokenHash");
   const serializedUser = serializeEmployee(safeUser);

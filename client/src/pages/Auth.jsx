@@ -43,8 +43,10 @@ export default function Auth({ mode = "login" }) {
       }
       navigate("/dashboard");
     } catch (err) {
-      const serverMessage = err.response?.data?.message || (typeof err.response?.data === "string" ? err.response.data : "");
-      setError(serverMessage || "Unable to continue right now.");
+      const serverData = err.response?.data;
+      const serverMessage = serverData?.message || (typeof serverData === "string" ? serverData : "");
+      const validationErrors = Array.isArray(serverData?.errors) ? serverData.errors.join(" ") : "";
+      setError(validationErrors || serverMessage || "Unable to continue right now.");
     } finally {
       setSubmitting(false);
     }

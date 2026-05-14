@@ -32,7 +32,7 @@ const schema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, unique: true, required: true, trim: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ["admin", "hr", "Employee"], default: "Employee" },
+  role: { type: String, enum: ["admin", "hr", "employee"], default: "employee" },
   designation: { type: String, default: "", trim: true },
   gender: { type: String, default: "", trim: true },
   projectId: { type: String, default: "", trim: true },
@@ -63,6 +63,7 @@ const schema = new mongoose.Schema({
   appreciation: { type: String, default: "", trim: true },
   leaveBalance: { type: leaveBalanceSchema, default: () => ({}) },
   faceProfile: { type: faceProfileSchema, default: () => ({}) },
+  profileImage: { type: String, default: null }, // Path to profile image
   refreshTokenHash: { type: String, default: "" },
   lastSeenAt: { type: Date, default: Date.now }
 }, { timestamps: true });

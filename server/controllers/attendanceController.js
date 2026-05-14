@@ -1,60 +1,11 @@
 import Attendance from "../models/Attendance.js";
 import User from "../models/User.js";
 import { cosineSimilarity, hasBasicLiveness } from "../utils/faceMatch.js";
+import { calculateWorkMinutes, getDayRange, recordAttendance } from "../services/attendanceService.js";
+import mongoose from "mongoose";
 
-const OFFICE_START_HOUR = Number(process.env.OFFICE_START_HOUR || 10);
 const FACE_MATCH_THRESHOLD = Number(process.env.FACE_MATCH_THRESHOLD || 0.86);
-
-const getTodayQuery = (userId) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return { userId, createdAt: { $gte: today } };
-};
-
-const calculateWorkMinutes = (checkIn, checkOut) => {
-  if (!checkIn || !checkOut) return 0;
-  const diff = new Date(checkOut) - new Date(checkIn);
-  return diff > 0 ? Math.floor(diff / 60000) : 0;
-};
-
-const hydrateAttendanceRecord = (id) => Attendance.findById(id)
-  .populate("userId", "employeeId name email department designation role status")
-  .lean();
-
-const emitAttendanceEvent = async (req, record, actionType) => {
-  const io = req.app.get("io");
-  if (!io || !record?._id) return;
-
-  const hydrated = await hydrateAttendanceRecord(record._id);
-  if (!hydrated) return;
-
-  const employee = hydrated.userId || {};
-  const normalizedStatus = String(hydrated.status || "").toLowerCase();
-  let eventName = actionType === "checkout" || hydrated.checkOut ? "checked_out" : "checked_in";
-
-  if (normalizedStatus.includes("absent")) eventName = "absent";
-  if (normalizedStatus.includes("leave")) eventName = "on_leave";
-  if (normalizedStatus.includes("remote")) eventName = "remote";
-
-  io.emit("attendance:updated", {
-    type: eventName,
-    record: hydrated,
-    employee,
-    message: buildAttendanceMessage(employee.name, eventName, hydrated),
-    timestamp: new Date().toISOString()
-  });
-};
-
-const buildAttendanceMessage = (name = "Employee", eventName, record) => {
-  const time = record.checkOut || record.checkIn || record.updatedAt || new Date();
-  const formattedTime = new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-  if (eventName === "checked_out") return `${name} checked out at ${formattedTime}`;
-  if (eventName === "absent") return `${name} marked absent`;
-  if (eventName === "on_leave") return `${name} is on leave`;
-  if (eventName === "remote") return `${name} is working remotely`;
-  return `${name} checked in at ${formattedTime}`;
-};
+const VOICE_COMMANDS = ["mark my attendance", "मेरी उपस्थिति दर्ज करें", "marquer ma présence", "marcar mi asistencia"];
 
 export const enrollFace = async (req, res) => {
   const role = String(req.user.role || "").toLowerCase();
@@ -87,7 +38,7 @@ export const enrollFace = async (req, res) => {
 };
 
 export const markAttendance = async (req, res) => {
-  const { action, status, checkIn, checkOut, faceEmbedding, liveness = {}, location } = req.body;
+  const { action, status, faceEmbedding, liveness = {}, location, method = "manual" } = req.body;
   const role = String(req.user.role || "").toLowerCase();
   const userId =
     ["admin", "hr"].includes(role) && req.body.userId ? req.body.userId : req.user.id;
@@ -100,6 +51,10 @@ export const markAttendance = async (req, res) => {
     const storedEmbedding = employee?.faceProfile?.embedding || [];
 
     if (storedEmbedding.length) {
+      if (!Array.isArray(faceEmbedding) || faceEmbedding.length < 32) {
+        return res.status(400).json({ message: "A valid face embedding is required for verification" });
+      }
+
       if (!hasBasicLiveness(liveness)) {
         return res.status(400).json({ message: "Liveness check failed. Blink or move your head and try again." });
       }
@@ -113,44 +68,53 @@ export const markAttendance = async (req, res) => {
     }
   }
 
-  let record = await Attendance.findOne(getTodayQuery(userId)).sort({ createdAt: -1 });
-  const nextCheckIn = checkIn ? new Date(checkIn) : new Date();
-  const isLate = nextCheckIn.getHours() >= OFFICE_START_HOUR;
-
-  if (!record) {
-    record = await Attendance.create({
-      userId,
-      checkIn: action === "checkout" ? null : nextCheckIn,
-      checkOut: checkOut ? new Date(checkOut) : null,
-      status: status || (isLate ? "Late" : action === "checkout" ? "Checked Out" : "Checked In"),
-      isLate,
-      faceVerified,
-      faceMatchScore,
-      liveness,
-      location
-    });
-
-    await emitAttendanceEvent(req, record, action);
-    return res.status(201).json(record);
-  }
-
-  if (action === "checkout" || checkOut) {
-    record.checkOut = checkOut ? new Date(checkOut) : new Date();
-    record.workMinutes = calculateWorkMinutes(record.checkIn, record.checkOut);
-    record.status = status || "Checked Out";
-  } else {
-    record.checkIn = record.checkIn || nextCheckIn;
-    record.isLate = isLate;
-    record.status = status || (isLate ? "Late" : "Checked In");
-    record.faceVerified = faceVerified;
-    record.faceMatchScore = faceMatchScore;
-    record.liveness = liveness;
-    record.location = location;
-  }
-
-  await record.save();
-  await emitAttendanceEvent(req, record, action);
+  const record = await recordAttendance({
+    req,
+    userId,
+    action,
+    method: method === "face_recognition" || faceEmbedding ? "face_recognition" : "manual",
+    status,
+    location,
+    faceVerified,
+    faceMatchScore,
+    liveness,
+    faceData: faceEmbedding ? {
+      embedding: faceEmbedding,
+      matchScore: faceMatchScore,
+      livenessDetected: hasBasicLiveness(liveness)
+    } : undefined
+  });
   res.json(record);
+};
+
+export const markVoiceAttendance = async (req, res) => {
+  const { transcript = "", language = "en-US", confidence = null, attempts = 1, action = "checkin" } = req.body;
+  const normalized = String(transcript).trim().toLowerCase();
+  const valid = VOICE_COMMANDS.some((phrase) => normalized.includes(phrase.toLowerCase()));
+
+  if (!valid) {
+    return res.status(400).json({
+      message: "Voice command not recognized. Please say: Mark my attendance",
+      transcript,
+      expectedPhrase: "Mark my attendance"
+    });
+  }
+
+  const record = await recordAttendance({
+    req,
+    userId: req.user.id,
+    action,
+    method: "voice_recognition",
+    voiceData: {
+      phrase: "Mark my attendance",
+      transcript,
+      language,
+      confidence,
+      attempts
+    }
+  });
+
+  res.status(201).json({ message: "Voice attendance marked successfully", attendance: record });
 };
 
 export const getAttendance = async (req, res) => {
@@ -206,4 +170,38 @@ export const getAttendanceSummary = async (req, res) => {
     },
     records
   });
+};
+
+export const getAttendanceAnalytics = async (req, res) => {
+  const role = String(req.user.role || "").toLowerCase();
+  const { start, end } = getDayRange(req.query.date ? new Date(req.query.date) : new Date());
+  const filter = { date: { $gte: start, $lt: end } };
+
+  if (!["admin", "hr"].includes(role)) {
+    filter.userId = new mongoose.Types.ObjectId(req.user.id);
+  } else if (req.query.userId) {
+    if (!mongoose.Types.ObjectId.isValid(req.query.userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+    filter.userId = new mongoose.Types.ObjectId(req.query.userId);
+  }
+
+  const [byMethod, byStatus, recentLogs] = await Promise.all([
+    Attendance.aggregate([
+      { $match: filter },
+      { $group: { _id: "$method", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]),
+    Attendance.aggregate([
+      { $match: filter },
+      { $group: { _id: "$status", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]),
+    Attendance.find(filter)
+      .populate("userId", "employeeId name email department designation")
+      .sort({ createdAt: -1 })
+      .limit(30)
+  ]);
+
+  res.json({ date: start, byMethod, byStatus, recentLogs });
 };

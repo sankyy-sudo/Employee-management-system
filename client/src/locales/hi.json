@@ -1,0 +1,30 @@
+{
+  "common": {
+    "dashboard": "डैशबोर्ड",
+    "attendance": "उपस्थिति",
+    "leave": "अवकाश",
+    "meeting": "मीटिंग",
+    "notifications": "सूचनाएं",
+    "admin": "एडमिन",
+    "language": "भाषा"
+  },
+  "attendance": {
+    "smartTitle": "स्मार्ट उपस्थिति प्रणाली",
+    "smartSubtitle": "फेस, वॉइस, RFID, एनालिटिक्स और सुरक्षित उपस्थिति।",
+    "face": "फेस",
+    "voice": "वॉइस",
+    "rfid": "RFID",
+    "logs": "लॉग",
+    "adminCards": "कार्ड एडमिन",
+    "startCamera": "कैमरा शुरू करें",
+    "stopCamera": "कैमरा बंद करें",
+    "registerFace": "फेस रजिस्टर करें",
+    "checkIn": "चेक इन",
+    "checkOut": "चेक आउट",
+    "listen": "सुनें",
+    "retry": "फिर कोशिश करें",
+    "scanCard": "कार्ड स्कैन करें",
+    "cardPlaceholder": "कार्ड नंबर स्कैन या दर्ज करें",
+    "export": "एक्सपोर्ट"
+  }
+}

@@ -4,6 +4,7 @@ import { AnimatePresence, motion as Motion } from "framer-motion";
 import { Bell, ChevronDown, LogOut, Menu, MessageSquare, Moon, Search, Settings, Sun, UserRound } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import Avatar from "./ui/Avatar";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const titles = {
   "/dashboard": "Dashboard",
@@ -57,6 +58,9 @@ export default function Navbar({ onMenuClick }) {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden sm:block">
+            <LanguageSwitcher />
+          </div>
           <Link to="/chat" className="hidden h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 sm:flex" aria-label="Messages">
             <MessageSquare size={18} />
           </Link>

@@ -1,0 +1,30 @@
+{
+  "common": {
+    "dashboard": "Panel",
+    "attendance": "Asistencia",
+    "leave": "Permisos",
+    "meeting": "Reunión",
+    "notifications": "Notificaciones",
+    "admin": "Admin",
+    "language": "Idioma"
+  },
+  "attendance": {
+    "smartTitle": "Sistema inteligente de asistencia",
+    "smartSubtitle": "Rostro, voz, RFID, analíticas y registro seguro.",
+    "face": "Rostro",
+    "voice": "Voz",
+    "rfid": "RFID",
+    "logs": "Registros",
+    "adminCards": "Tarjetas",
+    "startCamera": "Iniciar cámara",
+    "stopCamera": "Detener cámara",
+    "registerFace": "Registrar rostro",
+    "checkIn": "Entrada",
+    "checkOut": "Salida",
+    "listen": "Escuchar",
+    "retry": "Reintentar",
+    "scanCard": "Escanear tarjeta",
+    "cardPlaceholder": "Escanear o ingresar número de tarjeta",
+    "export": "Exportar"
+  }
+}
