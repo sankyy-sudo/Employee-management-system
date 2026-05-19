@@ -149,6 +149,15 @@ export const getPayrolls = async (req, res) => {
   res.json(payrolls);
 };
 
+export const getMyPayrolls = async (req, res) => {
+  const payrolls = await Payroll.find({ employee: req.user.id })
+    .populate({ path: "employee", select: "employeeId name email department designation salary" })
+    .populate({ path: "generatedBy", select: "name role" })
+    .sort({ year: -1, month: -1, createdAt: -1 });
+
+  res.json(payrolls);
+};
+
 export const createPayroll = async (req, res) => {
   const payload = await calculatePayrollPayload(req.body, req.user.id);
   const payroll = await Payroll.create(payload);

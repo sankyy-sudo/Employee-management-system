@@ -56,7 +56,7 @@ import { fetchAttendanceDashboard, markAttendance } from "../store/attendanceSli
 import { applyLeave, fetchLeaveDashboard } from "../store/leaveSlice";
 import { fetchMoodAnalytics, submitMood } from "../store/moodSlice";
 import { fetchNotifications } from "../store/notificationSlice";
-import { fetchPayrollDashboard } from "../store/payrollSlice";
+import { fetchMyPayrollDashboard } from "../store/payrollSlice";
 import { fetchTasks } from "../store/taskSlice";
 import { formatDate, formatTime, humanizeTaskStatus } from "../utils/format";
 import { statusTone as badgeTone } from "../utils/statusTone";
@@ -106,7 +106,7 @@ export default function Dashboard() {
   useEffect(() => {
     dispatch(fetchAttendanceDashboard());
     dispatch(fetchLeaveDashboard());
-    dispatch(fetchPayrollDashboard());
+    dispatch(fetchMyPayrollDashboard());
     dispatch(fetchTasks());
     dispatch(fetchMoodAnalytics());
     dispatch(fetchNotifications());
